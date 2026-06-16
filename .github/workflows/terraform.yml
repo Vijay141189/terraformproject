@@ -1,0 +1,47 @@
+name: "Terraform Azure CI/CD"
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    name: "Run Terraform"
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. GitHub tumhara code temporary runner par copy karega
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # 2. Azure par login karna (Jo fresh secret humne banaya, ye wahan se permission lega)
+    - name: Azure Login
+      uses: azure/login@v3
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    # 3. Terraform tool install karna
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.5.0
+
+    # 4. Terraform Init
+    - name: Terraform Init
+      run: |
+        cd parent
+        terraform init
+
+    # 5. Terraform Plan (Sirf check karega ki kya ban raha hai)
+    - name: Terraform Plan
+      run: |
+        cd parent
+        terraform plan
+
+    # 6. Terraform Apply (Yeh Azure par real resources bana dega)
+    - name: Terraform Apply
+      run: |
+        cd parent
+        terraform apply -auto-approve
