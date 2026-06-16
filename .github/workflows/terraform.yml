@@ -1,6 +1,6 @@
 name: "Terraform Azure CI/CD"
 
-# Yeh pipeline tab chalegi jab tum main branch me kuch bhi push karoge
+
 on:
   push:
     branches:
