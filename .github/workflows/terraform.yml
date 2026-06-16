@@ -1,0 +1,48 @@
+name: "Terraform Azure CI/CD"
+
+# Yeh pipeline tab chalegi jab tum main branch me kuch bhi push karoge
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Isse tum manually bhi button daba kar pipeline chala sakte ho
+
+jobs:
+  terraform:
+    name: "Run Terraform"
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: GitHub tumhara code is temporary runner par copy karega
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # Step 2: Azure par login karna (Jo secret abhi tumne banaya, ye wahan se permission lega)
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    # Step 3: Terraform tool install karna
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.5.0
+
+    # Step 4: Terraform Init (Hume parent folder ke andar chalana hai)
+    - name: Terraform Init
+      run: |
+        cd parent
+        terraform init
+
+    # Step 5: Terraform Plan (Keval check karega ki kya ban raha hai)
+    - name: Terraform Plan
+      run: |
+        cd parent
+        terraform plan
+
+    # Step 6: Terraform Apply (Yeh Azure par real resources bana dega)
+    - name: Terraform Apply
+      run: |
+        cd parent
+        terraform apply -auto-approve
